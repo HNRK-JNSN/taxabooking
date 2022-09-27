@@ -40,7 +40,7 @@ Fin en tom folder og opret en ny solution fil.
 ### 3. Opret et projekt til __unit tests__
 
 ``` bash
-~$ dotnet new nunit -o my-new-service-svTest
+~$ dotnet new nunit -o my-new-service.Test
 ~$ dotnet sln add ./my-new-service.Test/my-new-service.Test.csproj
 ~$ dotnet add ./my-new-service.Tests/my-new-service.Tests.csproj reference ./my-new-service/my-new-service.csproj
 
