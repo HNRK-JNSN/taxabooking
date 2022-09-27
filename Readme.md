@@ -129,14 +129,18 @@ Fra __my-new-service__-folderen:
 
 ### 3. Tag det nye image
 
+Du skal oprette et Docker Hub repository som matcher dit image navn -- f.eks. <min-konto>/my-new-service
+
 ```bash
-~$ docker tag my-new-service-image hnrkjnsn/itarkinf:my-new-service
+~$ docker tag my-new-service-image <min-konto>/my-new-service:latest
 ```
 
 ### 4. Tilføj semantisk versioner (tags)
 
 ```bash
-~$ docker tag my-new-service-image hnrkjnsn/itarkinf:my-new-service
+~$ docker tag my-new-service-image hnrkjnsn/my-new-service:1
+~$ docker tag my-new-service-image hnrkjnsn/my-new-service:1.0
+~$ docker tag my-new-service-image hnrkjnsn/my-new-service:1.0.0
 ```
 
 ### 5. Upload lokalle images til Docker Hub konto
@@ -145,9 +149,10 @@ Dette trin kræver at du har en Docker Hub konto og oprettet et repository til d
 
 ```bash
 ~$ docker login
-~$ docker push myaccountname/myreponame:my-new-service-image
-
+~$ docker push <min-konto>/my-new-service:latest
 ```
+
+Gentag sidste instruks for de 3 andre udgaver af image'et.
 
 ---
 
