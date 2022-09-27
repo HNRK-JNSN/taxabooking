@@ -7,19 +7,23 @@ using Booking.Models;
 
 namespace TaxaService.Controllers;
 
+/// <summary>
+/// This controller exposes a microservices HTTP interface for receiving
+/// taxa booking messages. Data is relayed to a common message-broker for
+/// further processing.
+/// </summary>
 [ApiController]
 [Route("[controller]")]
 public class BookingController : ControllerBase
 {
-
-    private static List<BookingDTO> Bookings = new List<BookingDTO>();
-
     private readonly ILogger<BookingController> _logger;
-
     private readonly IConnection _connection;
-
     private Int32 NextId { get; set; }
 
+    /// <summary>
+    /// Inject a logger service into the controller on creation.
+    /// </summary>
+    /// <param name="logger">The logger service.</param>
     public BookingController(ILogger<BookingController> logger)
     {
         _logger = logger;
@@ -28,12 +32,11 @@ public class BookingController : ControllerBase
         _connection = factory.CreateConnection();
     }
 
-    [HttpGet("GetBooking")]
-    public IEnumerable<BookingDTO> Get(int id)
-    {
-        return Bookings;
-    }
-
+    /// <summary>
+    /// Service version endpoint. 
+    /// Fetches metadata information, through reflection from the service assembly.
+    /// </summary>
+    /// <returns>All metadata attributes from assembly in text string</returns>
     [HttpGet("version")]
     public IEnumerable<string> Get()
     {
@@ -46,26 +49,40 @@ public class BookingController : ControllerBase
         return properties;
     }
 
+    /// <summary>
+    /// Endpoint for recieving taxa booking messages.
+    /// </summary>
+    /// <param name="theBooking">A booking object</param>
+    /// <returns>On success - the booking object with booking id and received date.</returns>
     [HttpPost("Booking")]
-    public void Post(BookingDTO theBooking)
+    public BookingDTO? Post(BookingDTO theBooking)
     {
+        // TODO: Sequencing and datestamp should be performed by 
+        //       booking consumer service!
         theBooking.BookingID = NextId++;
         theBooking.BookingSubmitTime = DateTime.UtcNow;
 
-        using(var channel = _connection.CreateModel())
-        {
-            channel.QueueDeclare(queue: "taxabooking",
-                                 durable: false,
-                                 exclusive: false,
-                                 autoDelete: false,
-                                 arguments: null);
+        try {
+            using(var channel = _connection.CreateModel())
+            {
+                channel.QueueDeclare(queue: "taxabooking",
+                                    durable: false,
+                                    exclusive: false,
+                                    autoDelete: false,
+                                    arguments: null);
 
-            var body = JsonSerializer.SerializeToUtf8Bytes(theBooking);
+                var body = JsonSerializer.SerializeToUtf8Bytes(theBooking);
 
-            channel.BasicPublish(exchange: "",
-                                 routingKey: "taxabooking",
-                                 basicProperties: null,
-                                 body: body);
+                channel.BasicPublish(exchange: "",
+                                    routingKey: "taxabooking",
+                                    basicProperties: null,
+                                    body: body);
+            }
+        } catch {
+            return null;
         }
+
+        return theBooking;
+
     }
 }
