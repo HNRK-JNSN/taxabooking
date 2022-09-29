@@ -1,4 +1,4 @@
-name: Taxa Booking Service Build
+name: Taxi Booking Service Build
 
 on:
   push:
