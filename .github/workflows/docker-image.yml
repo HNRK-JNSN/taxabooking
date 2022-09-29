@@ -21,6 +21,10 @@ jobs:
       run:
         docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
     - name: Build the Docker image
+      env:
+        DOCKER_USER: ${{ secrets.DOCKER_USER }}
       run: docker build . --file taxabooking-svc/Dockerfile --tag ${DOCKER_USER}/taxabooking-svc:latest
     - name: Push Docker image to Docker Hub
+      env:
+        DOCKER_USER: ${{ secrets.DOCKER_USER }}
       run: docker push ${DOCKER_USER}/taxabooking-svc:latest
