@@ -15,17 +15,26 @@ I denne guide beskrives hvordan en .NET Core Controller kan test med brug af et 
 
 ## __Opret Unit Test subproject__
 
-- dotnet new utest -o mit-projekt-test
-- tilføj reference i løsningen
+Fra en terminal i test projektet:
+
+``` bash
+  dotnet new utest -o mit-projekt-test
+```
+
+TODO: tilføj reference i løsningen til projektet som testes.
 
 ## __Tilføj MOQ Framework nuget__
 
-- dotnet add package moq
+Fra en terminal i test projektet:
 
-## TODO: Beskriv hvad og hvorfor er en mock
+``` bash
+  dotnet add package moq
+```
+
+> TODO: Beskriv hvad er og hvorfor man bruger en mock
 
 
-## __ Tilføj Mock for Ilogger
+## __Tilføj Mock for Ilogger__
 
 Tilføj global variabel til ilogger:
 
@@ -50,7 +59,7 @@ I Testklassens Setup-metode:
         .Build();
 ```
 
-## __ Tilføj Mock for IConfiguration
+## __Tilføj Mock for IConfiguration__
 
 Tilføj global variabel til iconfiguration:
 
@@ -64,4 +73,63 @@ I Testklassens Setup-metode:
     _configuration = new ConfigurationBuilder()
         .AddInMemoryCollection(myConfiguration)
         .Build();
+```
+
+---
+
+## __Tilføj hjælper metoder__
+
+I Testfilen tilføj metoder til at oprette f.eks. test DTO'er.
+
+```C#
+/// <summary>
+/// Helper method for creating BookingDTO instance.
+/// </summary>
+/// <param name="requestTime"></param>
+/// <returns></returns>
+private BookingDTO CreateBooking(DateTime requestTime)
+{
+    var bookingDTO = new BookingDTO()
+    {
+        BookingID = null,
+        BookingSubmitTime = null,
+        CustomerName ="Test Customer",
+        StartAdresse ="Test Address",
+        DestinationsAdresse = "Some place, not far",
+        RequestedStartTime = requestTime,
+    };
+    return bookingDTO;
+}
+```
+
+---
+
+## __Tilføj unit test med Mock__
+
+```C#
+[Test]
+public async Task TestBookingEndpoint_failure_posting()
+{
+    // Arrange
+    var bookingDTO = CreateBooking(new DateTime(2023,11,22, 14, 22, 32));
+    var mockRepo = new Mock<IBookingService>();
+    mockRepo.Setup(svc => svc.AddBooking(bookingDTO)).Returns(Task.FromException(new Exception()));
+    var controller = new BookingController(_logger, _configuration, mockRepo.Object);
+
+    // Act        
+    var result = await controller.PostBooking(bookingDTO);
+
+    // Assert
+    Assert.IsNull(result);
+}
+```
+
+---
+
+## __Kør unit-testene__
+
+Fra en terminal i roden af løsningen
+
+``` bash
+dotnet test --loger trx
 ```
