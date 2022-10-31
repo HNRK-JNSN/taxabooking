@@ -24,11 +24,20 @@ public class BookingController : ControllerBase
     /// Inject a logger service into the controller on creation.
     /// </summary>
     /// <param name="logger">The logger service.</param>
-    public BookingController(ILogger<BookingController> logger)
+    public BookingController(ILogger<BookingController> logger, IConfiguration configuration)
     {
         _logger = logger;
 
-        var factory = new ConnectionFactory() { HostName = "localhost" };
+        var mqhostname = configuration["TaxaBookingBrokerHost"];
+
+        if (String.IsNullOrEmpty(mqhostname))
+        {
+            mqhostname = "localhost";
+        }
+
+        _logger.LogInformation($"Using host at {mqhostname} for message broker");
+        
+        var factory = new ConnectionFactory() { HostName = mqhostname };
         _connection = factory.CreateConnection();
     }
 
