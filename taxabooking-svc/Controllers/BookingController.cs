@@ -1,8 +1,5 @@
-using System;
-using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using RabbitMQ.Client;
 using Booking.Models;
 
 namespace TaxaService.Controllers;
@@ -17,28 +14,17 @@ namespace TaxaService.Controllers;
 public class BookingController : ControllerBase
 {
     private readonly ILogger<BookingController> _logger;
-    private readonly IConnection _connection;
-    private Int32 NextId { get; set; }
+    private readonly IBookingService _bookingservice;
+    private static Int32 NextId { get; set; }
 
     /// <summary>
     /// Inject a logger service into the controller on creation.
     /// </summary>
     /// <param name="logger">The logger service.</param>
-    public BookingController(ILogger<BookingController> logger, IConfiguration configuration)
+    public BookingController(ILogger<BookingController> logger, IConfiguration configuration, IBookingService bookingService)
     {
         _logger = logger;
-
-        var mqhostname = configuration["TaxaBookingBrokerHost"];
-
-        if (String.IsNullOrEmpty(mqhostname))
-        {
-            mqhostname = "localhost";
-        }
-
-        _logger.LogInformation($"Using host at {mqhostname} for message broker");
-        
-        var factory = new ConnectionFactory() { HostName = mqhostname };
-        _connection = factory.CreateConnection();
+        _bookingservice = bookingService;
     }
 
     /// <summary>
@@ -64,34 +50,25 @@ public class BookingController : ControllerBase
     /// <param name="theBooking">A booking object</param>
     /// <returns>On success - the booking object with booking id and received date.</returns>
     [HttpPost("Booking")]
-    public BookingDTO? Post(BookingDTO theBooking)
+    public async Task<BookingDTO?> PostBooking(BookingDTO theBooking)
     {
         // TODO: Sequencing and datestamp should be performed by 
         //       booking consumer service!
-        theBooking.BookingID = NextId++;
+        theBooking.BookingID = ++NextId;
         theBooking.BookingSubmitTime = DateTime.UtcNow;
 
-        try {
-            using(var channel = _connection.CreateModel())
-            {
-                channel.QueueDeclare(queue: "taxabooking",
-                                    durable: false,
-                                    exclusive: false,
-                                    autoDelete: false,
-                                    arguments: null);
+        var res = _bookingservice.AddBooking(theBooking);
 
-                var body = JsonSerializer.SerializeToUtf8Bytes(theBooking);
-
-                channel.BasicPublish(exchange: "",
-                                    routingKey: "taxabooking",
-                                    basicProperties: null,
-                                    body: body);
-            }
-        } catch {
+        if (res.IsFaulted)
+        {
             return null;
         }
 
         return theBooking;
+    }
 
+    public static void ResetRequestCounter()
+    {
+        NextId = 0;
     }
 }
