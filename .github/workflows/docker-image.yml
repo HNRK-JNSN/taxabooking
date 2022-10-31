@@ -1,0 +1,30 @@
+name: Taxi Booking Service Build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Log in to Docker Hub
+      env:
+        DOCKER_USER: ${{ secrets.DOCKER_USER }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      run:
+        docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+    - name: Build the Docker image
+      env:
+        DOCKER_USER: ${{ secrets.DOCKER_USER }}
+      run: docker build . --file taxabooking-svc/Dockerfile --tag ${DOCKER_USER}/taxabooking-svc:latest
+    - name: Push Docker image to Docker Hub
+      env:
+        DOCKER_USER: ${{ secrets.DOCKER_USER }}
+      run: docker push ${DOCKER_USER}/taxabooking-svc:latest
