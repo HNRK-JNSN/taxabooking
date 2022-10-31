@@ -12,7 +12,7 @@ Denne fil indeholder information omkring hvordan en ny service oprettes med brug
 
 ---
 
-![Processen](resources/nyt-service-process.png)
+![Processen](nyt-service-process.png)
 
 ---
 
