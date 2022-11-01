@@ -1,6 +1,6 @@
 # __Unit test af .NET MVC Controller__
 
-> _Note:_ Dette dokument er under udarbejdelse!
+> Version 0.8 - 01-11-2022
 
 <img align="right" src="micro-logo.png" width="150" />
 
@@ -17,12 +17,12 @@ I denne guide beskrives hvordan en .NET Core Controller unit-testes med brug af 
 
 ---
 
-## __Opret Unit Test subproject__
+## __Opret Unit Test subprojekt__
 
 Hvis du har fulgt guiden [Opret ny microservice løsning](Howto-new-service.md) er
 dette trin ikke nødvendigt da det er en del af den nævnte guide.
 
-Der antages at der allerede er oprettet en __.NET Visual Studio solution__ (løsning) med et _microserviceprojekt_ som skal unit-testes. Der antages ligeledes at dette projekt indeholder en __C# MVC controller__ (herefter navngivet _MyServiceController_) som er den klasse  som skal testes. Konstruktoren af _MyServiceController_ forventes at modtage et logger og en configurations, som _dependency-injected_ instanser.
+Der antages at der allerede er oprettet en __.NET Visual Studio solution__ (løsning) med et _microserviceprojekt_ som skal unit-testes. Der antages ligeledes at dette projekt indeholder en __C# HTTP-controller__ (herefter navngivet _MyServiceController_) som er den klasse  som skal testes. Konstruktoren af _MyServiceController_ forventes at modtage et _logger_ og en _configurations_ instans.
 
 1) Fra en terminal i roden af _løsningen_ opret et nyt C# NUnit testprojekt:
   
@@ -143,7 +143,8 @@ Koden som skal testes vises herunder:
        theBooking.BookingID = ++NextId;
        theBooking.BookingSubmitTime = DateTime.UtcNow;
 
-       var res = _bookingservice.AddBooking(theBooking); // Denne linje skal mockes!
+       // Denne linje skal mockes!
+       var res = _bookingservice.AddBooking(theBooking);
 
        if (res.IsFaulted)
        {
@@ -154,7 +155,7 @@ Koden som skal testes vises herunder:
    }
    ```
 
-I vores unit-test herunder, ønsker vi at teste det tilfælde at der opstår en fejl i __BookingService.AddBooking__-metoden når vi udfører et HTTP post til vores __BookingController__.  Vi vil altså gerne teste at der returneres et __null__ object fra vores __PostBooking__-metode.
+I vores unit-test herunder, ønsker vi at teste det tilfælde at der opstår en fejl i __BookingService.AddBooking__-metoden når vi udfører et HTTP post til vores __BookingController__.  Vi vil altså gerne teste at der returneres et __null__-object fra vores __PostBooking__-metode.
 
    ```C#
    [Test]
@@ -178,11 +179,11 @@ Unit-testen deles op i 3 sektioner:
 
 ### __Arrange__
 
-I denne sektion forbereder vi testen, vores DTO, vores mock af __BookingService.AddBooking__, samt oprettelse af et instans af den klasse som skal testes - __BookingController__. Bemærk at vi sender alle vores 3 mock-instanser (\_logger, \_configuration og MockRepo.Object) med i konstruktoren.
+I denne sektion forbereder vi testen, vores DTO, vores mock af __BookingService.AddBooking__, samt oprettelse af en instans af den klasse som skal testes - __BookingController__. Bemærk at vi sender alle vores 3 mock-instanser (\_logger, \_configuration og MockRepo.Object) med i konstruktoren.
 
 ### __Act__
 
-Her eksekvere vi den logik som skal testes, altså, vi kalder PostBooking med vores DTO og får et svar tilbage i __res__ variablen.
+Her eksekvere vi den logik som skal testes, altså, vi kalder __PostBooking__ med vores DTO og får et svar tilbage i __res__ variablen.
 
 ### __Assert__
 
@@ -190,7 +191,7 @@ Her undersøger vi om vores svar er som forventes, altså om testen består elle
 
 > Bemærk:
 >  
-> Vi klader vores PostBooking-metode asynkront, så derfor skal selve testmetoden (_TestBookingEndpoint_failure_posting_) returnere en Task som skal prefikses met _async_ definitionen.
+> Vi kalder vores _PostBooking-metode_ asynkront, så derfor skal selve testmetoden (_TestBookingEndpoint_failure_posting_) returnere en Task som skal prefikses met _async_ definitionen.
 >  
 > .
 
