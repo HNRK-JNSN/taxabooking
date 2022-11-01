@@ -205,10 +205,10 @@ For at eksekvere alle testene i dit test-projekt skal du køre følgende kommand
 dotnet test --logger trx
 ```
 
-Som producere følgende output med Passed: 3 (altså ingen fejl i testene):
+Som producerer følgende output med __Passed: 3__ (altså ingen fejl i testene):
 
 ```bash
-Passed!  - Failed:     0, Passed:     3, Skipped:     0, Total:     3, Duration: 148 ms - taxabooking-svc-test.dll (net6.0)
+ Passed!  - Failed:     0, Passed:     3, Skipped:     0, Total:     3, Duration: 148 ms - taxabooking-svc-test.dll (net6.0)
 ```
 
 > Den sidste parameter i dotnet test kommandoen (--logger trx), gemmer outputet i en XML-fil i en folder kaldet _TestResults_.
@@ -231,6 +231,6 @@ Under udvikling kan du f.eks. have behov for at kun at køre en enkelt test elle
 ~$ dotnet test --filter TestBookingEndpoint_failure_posting
 ```
 
-Du kan finde mere information omkring test filtrering på: [Run selected unit tests](https://learn.microsoft.com/en-us/dotnet/core/testing/selective-unit-tests?pivots=nunit)
+Du kan finde mere information om test filtrering på: [Run selected unit tests](https://learn.microsoft.com/en-us/dotnet/core/testing/selective-unit-tests?pivots=nunit)
 
 ---
