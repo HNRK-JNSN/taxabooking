@@ -15,4 +15,5 @@ namespace Booking.Models
         public DateTime? RequestedStartTime { get; set; }
 
     }
+
 }
