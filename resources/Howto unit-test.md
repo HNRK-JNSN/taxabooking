@@ -8,10 +8,11 @@ I denne guide beskrives hvordan en .NET Core Controller unit-testes med brug af 
 
 ---
 
-> _Nyttige links:_
+> __Nyttige links:__
 >  
 > - Microsoft dokumentation for [best-practices i unit-tests](https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices)
 > - [Unit testing C# with NUnit and .NET Core](https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-with-nunit?source=recommendations)
+> - [What are fakes in unit testing: mocks vs stubs](https://canro91.github.io/2021/05/24/WhatAreFakesInTesting/)
 >  
 > .
 

@@ -2,10 +2,11 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Booking.Models;
 using RabbitMQ.Client;
+using RabbitMQ.Client.Exceptions;
 
 public interface IBookingService
 {
-    Task AddBooking(BookingDTO theBooking);
+    Task<BookingDTO?> AddBooking(BookingDTO theBooking);
 
 }
 
@@ -18,7 +19,8 @@ public class BookingService : IBookingService
 {
     private ILogger<BookingService> _logger;
     private IConfiguration _config;
-    private readonly IConnection _connection;
+    private readonly string _mqHostname;
+    private static Int32 NextId { get; set; }
 
     /// <summary>
     /// Create an instance of the BookingService.
@@ -30,17 +32,15 @@ public class BookingService : IBookingService
         _logger = logger;
         _config = configuration;
 
-        var mqhostname = configuration["TaxaBookingBrokerHost"];
+        _mqHostname = configuration["TaxaBookingBrokerHost"]!;
 
-        if (String.IsNullOrEmpty(mqhostname))
+        if (String.IsNullOrEmpty(_mqHostname))
         {
-            mqhostname = "localhost";
+            _mqHostname = "localhost";
         }
 
-        _logger.LogInformation($"Using host at {mqhostname} for message broker");
+        _logger.LogInformation($"Using host at {_mqHostname} for message broker");
 
-        var factory = new ConnectionFactory() { HostName = mqhostname };
-        _connection = factory.CreateConnection();
     }
 
     /// <summary>
@@ -48,33 +48,53 @@ public class BookingService : IBookingService
     /// </summary>
     /// <param name="theBooking">The booking request to submit</param>
     /// <returns>A guid with the request id</returns>
-    public Task AddBooking(BookingDTO theBooking)
+    public async Task<BookingDTO?> AddBooking(BookingDTO theBooking)
     {
+        Task t;
         try
         {
-            using (var channel = _connection.CreateModel())
+            t = Task.Run(() => 
             {
-                channel.QueueDeclare(queue: "taxabooking",
-                                    durable: false,
-                                    exclusive: false,
-                                    autoDelete: false,
-                                    arguments: null);
+                var factory = new ConnectionFactory() { HostName = _mqHostname };
 
-                var body = JsonSerializer.SerializeToUtf8Bytes(theBooking);
+                using (var channel = factory.CreateConnection().CreateModel())
+                {
+                    theBooking.BookingID = ++NextId;
+                    theBooking.BookingSubmitTime = DateTime.UtcNow;
 
-                channel.BasicPublish(exchange: "",
-                                    routingKey: "taxabooking",
-                                    basicProperties: null,
-                                    body: body);
-            }
+                    channel.QueueDeclare(queue: "taxabooking",
+                                        durable: false,
+                                        exclusive: false,
+                                        autoDelete: false,
+                                        arguments: null);
+
+                    var body = JsonSerializer.SerializeToUtf8Bytes(theBooking);
+
+                    channel.BasicPublish(exchange: "",
+                                        routingKey: "taxabooking",
+                                        basicProperties: null,
+                                        body: body);
+                    channel.WaitForConfirmsOrDie(TimeSpan.FromSeconds(5));
+                }
+            });
+
+            await t; 
         }
-        catch (Exception ex)
+        catch (OperationInterruptedException ex)
         {
             _logger.LogError(ex.Message);
-            return Task.FromException(ex);
+            throw;
         }
 
-        return Task.CompletedTask;
+        return theBooking;
+    }
+
+    /// <summary>
+    /// Reset the booking ID counter.
+    /// </summary>
+    public static void ResetRequestCounter()
+    {
+        NextId = 0;
     }
 
 }

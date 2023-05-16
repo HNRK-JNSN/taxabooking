@@ -1,6 +1,6 @@
-using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Booking.Models;
+using System.Diagnostics;
 
 namespace TaxaService.Controllers;
 
@@ -15,7 +15,6 @@ public class BookingController : ControllerBase
 {
     private readonly ILogger<BookingController> _logger;
     private readonly IBookingService _bookingservice;
-    private static Int32 NextId { get; set; }
 
     /// <summary>
     /// Inject a logger service into the controller on creation.
@@ -33,42 +32,44 @@ public class BookingController : ControllerBase
     /// </summary>
     /// <returns>All metadata attributes from assembly in text string</returns>
     [HttpGet("version")]
-    public IEnumerable<string> Get()
+    public async Task<Dictionary<string,string>> GetVersion()
     {
-        var properties = new List<string>();
+        var properties = new Dictionary<string, string>();
         var assembly = typeof(Program).Assembly;
-        foreach (var attribute in assembly.GetCustomAttributesData())
-        {
-            properties.Add($"{attribute.AttributeType.Name} - {attribute.ToString()}");
+
+        properties.Add("service", "Booking");
+        var ver = FileVersionInfo.GetVersionInfo(typeof(Program).Assembly.Location).ProductVersion;
+        properties.Add("version", ver!);
+
+        try {
+            var hostName = System.Net.Dns.GetHostName();
+            var ips = await System.Net.Dns.GetHostAddressesAsync(hostName);
+            var ipa = ips.First().MapToIPv4().ToString();
+            properties.Add("hosted-at-address", ipa);
+        } catch (Exception ex) {
+            _logger.LogError(ex.Message);
+            properties.Add("hosted-at-address", "Could not resolve IP-address");
         }
+
         return properties;
     }
 
     /// <summary>
-    /// Endpoint for recieving taxa booking messages.
+    /// Endpoint for receiving taxa booking messages.
     /// </summary>
     /// <param name="theBooking">A booking object</param>
     /// <returns>On success - the booking object with booking id and received date.</returns>
     [HttpPost("Booking")]
-    public async Task<BookingDTO?> PostBooking(BookingDTO theBooking)
+    public IActionResult PostBooking(BookingDTO theBooking)
     {
-        // TODO: Sequencing and datestamp should be performed by 
-        //       booking consumer service!
-        theBooking.BookingID = ++NextId;
-        theBooking.BookingSubmitTime = DateTime.UtcNow;
-
         var res = _bookingservice.AddBooking(theBooking);
 
         if (res.IsFaulted)
         {
-            return null;
+            return BadRequest();
         }
 
-        return theBooking;
+        return CreatedAtAction("Get", new { id = theBooking.BookingID }, theBooking);
     }
 
-    public static void ResetRequestCounter()
-    {
-        NextId = 0;
-    }
 }

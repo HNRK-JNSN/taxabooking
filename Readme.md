@@ -7,5 +7,6 @@ Taxa Services er et simpelt projekt til at demonstrere hvordan et projekt kan op
 ## Links
 
 - [Hvordan oprettes et nyt microservice projekt](resources/Howto-new-service.md)
+- [Hvordan Unittestes en controller](resources/Howto%20unit-test.md)
 
 ---
