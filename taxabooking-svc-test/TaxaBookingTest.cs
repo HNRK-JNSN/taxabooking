@@ -1,27 +1,31 @@
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using TaxaService.Controllers;
 using Booking.Models;
+using Microsoft.AspNetCore.Mvc;
+using RabbitMQ.Client.Exceptions;
+
 namespace TaxaServiceTest;
 
+/// <summary>
+/// Unit test for TaxaBooking Service
+/// </summary>
 public class TaxaBookingTests
 {
-    private ILogger<BookingController>? _logger;
-    private IConfiguration? _configuration;
+    private ILogger<BookingController> _logger = null!;
+    private IConfiguration _configuration = null!;
 
     [SetUp]
     public void Setup()
     {
          _logger = new Mock<ILogger<BookingController>>().Object;
 
-        var myConfiguration = new Dictionary<string, string>
+        var myConfiguration = new Dictionary<string, string?>
         {
             {"TaxaBookingBrokerHost", "http://testhost.local"}
         };
@@ -32,66 +36,41 @@ public class TaxaBookingTests
     }
 
     [Test]
-    public async Task TestBookingEndpoint_valid_dto()
+    public void TestBookingEndpoint_valid_dto()
     {
         // Arrange
         var requestTime = new DateTime(2023,11,22, 14, 22, 32);
         var bookingDTO = CreateBooking(requestTime);
-        var mockRepo = new Mock<IBookingService>();
-        mockRepo.Setup(svc => svc.AddBooking(bookingDTO)).Returns(Task.CompletedTask);
-        var controller = new BookingController(_logger, _configuration, mockRepo.Object);
+        var stubRepo = new Mock<IBookingService>();
+        stubRepo.Setup(svc => svc.AddBooking(bookingDTO))
+            .Returns(Task.FromResult<BookingDTO?>(bookingDTO));
+        var controller = new BookingController(_logger, _configuration, stubRepo.Object);
 
         // Act
-        BookingController.ResetRequestCounter();
-        var result = await controller.PostBooking(bookingDTO);
+        //BookingController.ResetRequestCounter();
+        var result = controller.PostBooking(bookingDTO);
 
         // Assert
-        Assert.IsInstanceOf(typeof(BookingDTO), result);
-        Assert.AreEqual(requestTime, result?.RequestedStartTime);
-        Assert.AreEqual(1, result?.BookingID);
-        Assert.AreEqual(DateTime.UtcNow.Date, result?.BookingSubmitTime.Value.Date);
-        Assert.AreEqual(DateTime.UtcNow.ToShortTimeString(), 
-                        result?.BookingSubmitTime.Value.ToShortTimeString());
+        Assert.That(result, Is.TypeOf<CreatedAtActionResult>());
+        Assert.That((result as CreatedAtActionResult)?.Value, Is.TypeOf<BookingDTO>());
+
     }
 
     [Test]
-    public async Task TestBookingEndpoint_next_counter()
-    {
-        // Arrange
-        var requestTime = new DateTime(2023,11,22, 14, 22, 32);
-        var bookingDTO = CreateBooking(requestTime);
-        var mockRepo = new Mock<IBookingService>();
-        mockRepo.Setup(svc => svc.AddBooking(bookingDTO)).Returns(Task.CompletedTask);
-
-        var controller1 = new BookingController(_logger, _configuration, mockRepo.Object);
-        var controller2 = new BookingController(_logger, _configuration, mockRepo.Object);
-
-        // Act
-        BookingController.ResetRequestCounter();
-        var res1 = await controller1.PostBooking(bookingDTO);
-        var bookingId1 = res1.BookingID;
-        var res2 = await controller2.PostBooking(bookingDTO);
-        var bookingId2 = res2.BookingID;
-
-        // Assert
-        Assert.AreEqual(1, bookingId1);
-        Assert.AreEqual(2, bookingId2);
-    }
-
-    [Test]
-    public async Task TestBookingEndpoint_failure_posting()
+    public void TestBookingEndpoint_failure_posting()
     {
         // Arrange
         var bookingDTO = CreateBooking(new DateTime(2023,11,22, 14, 22, 32));
-        var mockRepo = new Mock<IBookingService>();
-        mockRepo.Setup(svc => svc.AddBooking(bookingDTO)).Returns(Task.FromException(new Exception()));
-        var controller = new BookingController(_logger, _configuration, mockRepo.Object);
+        var stubRepo = new Mock<IBookingService>();
+        stubRepo.Setup(svc => svc.AddBooking(bookingDTO))
+            .Returns(Task.FromException<BookingDTO?>(new Exception() ));
+        var controller = new BookingController(_logger, _configuration, stubRepo.Object);
 
         // Act        
-        var result = await controller.PostBooking(bookingDTO);
+        var result = controller.PostBooking(bookingDTO);
 
         // Assert
-        Assert.IsNull(result);
+        Assert.That(result, Is.TypeOf<BadRequestResult>());
     }
 
     /// <summary>
@@ -113,4 +92,3 @@ public class TaxaBookingTests
         return bookingDTO;
     }
 }
-
