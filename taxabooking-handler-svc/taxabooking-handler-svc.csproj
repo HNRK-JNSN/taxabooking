@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>TaxaBookingHandler.Service</RootNamespace>
+    <Company>Hurtig Taxa Udvikling Aps</Company>
+    <Authors>Henrik Jensen</Authors>
+    <Copyright>2022 HTU Aps</Copyright>
+    <InformationalVersion>1.0.0</InformationalVersion>
+    <Description>
+      0.1.0 Booking Handler Service Created
+    </Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="RabbitMQ.Client" Version="6.4.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+  </ItemGroup>
+
+</Project>

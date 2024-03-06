@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "taxabooking-svc", "taxabook
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "taxabooking-svc-test", "taxabooking-svc-test\taxabooking-svc-test.csproj", "{FF4F767D-94D8-4AB6-90DE-D534AC650F0C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "taxabooking-handler-svc", "taxabooking-handler-svc\taxabooking-handler-svc.csproj", "{2E41033D-6183-404A-B18D-8BE25B720343}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "taxabooking-handler-svc-test", "taxabooking-handler-svc-test\taxabooking-handler-svc-test.csproj", "{13F4FD78-4222-43E8-B5F1-31E8DFD6DBCF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +28,13 @@ Global
 		{FF4F767D-94D8-4AB6-90DE-D534AC650F0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FF4F767D-94D8-4AB6-90DE-D534AC650F0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FF4F767D-94D8-4AB6-90DE-D534AC650F0C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E41033D-6183-404A-B18D-8BE25B720343}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E41033D-6183-404A-B18D-8BE25B720343}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E41033D-6183-404A-B18D-8BE25B720343}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E41033D-6183-404A-B18D-8BE25B720343}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13F4FD78-4222-43E8-B5F1-31E8DFD6DBCF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13F4FD78-4222-43E8-B5F1-31E8DFD6DBCF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13F4FD78-4222-43E8-B5F1-31E8DFD6DBCF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13F4FD78-4222-43E8-B5F1-31E8DFD6DBCF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

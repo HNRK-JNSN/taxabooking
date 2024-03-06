@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
-    <RootNamespace>taxaservice_test</RootNamespace>
+    <RootNamespace>taxabooking_handler_svc_test</RootNamespace>
     <Nullable>enable</Nullable>
 
     <IsPackable>false</IsPackable>
@@ -10,15 +10,13 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
-    <PackageReference Include="moq" Version="4.18.2" />
     <PackageReference Include="NUnit" Version="3.13.2" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.0.0" />
     <PackageReference Include="coverlet.collector" Version="3.1.0" />
-    <PackageReference Include="ObjectDumper.NET" Version="4.0.6" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\taxabooking-svc\taxabooking-svc.csproj" />
+    <ProjectReference Include="..\taxabooking-handler-svc\taxabooking-handler-svc.csproj" />
   </ItemGroup>
 
 </Project>
